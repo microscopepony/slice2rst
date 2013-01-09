@@ -7,7 +7,7 @@
 class RstGen : public Slice::ParserVisitor
 {
 public:
-	RstGen();
+    RstGen();
 
     virtual bool visitUnitStart(const Slice::UnitPtr&);
     virtual void visitUnitEnd(const Slice::UnitPtr&);
@@ -29,13 +29,13 @@ public:
     virtual void visitConst(const Slice::ConstPtr&);
 
 private:
-	std::string tab();
-	void genMetadata(const std::list<std::string>& metadata);
+    std::string tab();
+    void genMetadata(const std::list<std::string>& metadata);
 
-	int tabSize_;
-	int tabCount_;
+    int tabSize_;
+    int tabCount_;
 
-	::IceUtilInternal::Output xmlOut_;
+    ::IceUtilInternal::Output xmlOut_;
 };
 
 #endif

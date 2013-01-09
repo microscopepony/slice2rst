@@ -13,7 +13,7 @@
 #include <Slice/Preprocessor.h>
 #include <Slice/Parser.h>
 
-#include "XMLGen.h"
+#include "RstGen.hpp"
 
 using namespace std;
 using namespace Slice;
@@ -184,8 +184,8 @@ main(int argc, char* argv[])
 	}
 
 
-	XMLGen* myXMLGen = new XMLGen;
-	u->visit(myXMLGen, true);
+	RstGen* myRstGen = new RstGen;
+	u->visit(myRstGen, true);
 
 	u->destroy();
 

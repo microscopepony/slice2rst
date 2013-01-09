@@ -1,13 +1,13 @@
-#ifndef _XMLGEN_H_
-#define _XMLGEN_H_
+#ifndef _RSTGEN_H_
+#define _RSTGEN_H_
 
 #include <Slice/Parser.h>
 #include <IceUtil/OutputUtil.h>
 
-class XMLGen : public Slice::ParserVisitor
+class RstGen : public Slice::ParserVisitor
 {
 public:
-	XMLGen();
+	RstGen();
 
     virtual bool visitUnitStart(const Slice::UnitPtr&);
     virtual void visitUnitEnd(const Slice::UnitPtr&);

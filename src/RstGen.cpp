@@ -1,17 +1,17 @@
 #include <vector>
-#include "XMLGen.h"
+#include "RstGen.hpp"
 
 using namespace std;
 using namespace Slice;
 
-XMLGen::
-XMLGen() :
+RstGen::
+RstGen() :
 	tabSize_(4),
 	tabCount_(0)
 {
 }
 
-bool XMLGen::
+bool RstGen::
 visitUnitStart(const UnitPtr& p)
 {
 	cout << tab() << "<unit file=\"" << p->currentFile() << "\">\n";
@@ -19,13 +19,13 @@ visitUnitStart(const UnitPtr& p)
 	return true;
 }
 
-void XMLGen::
+void RstGen::
 visitUnitEnd(const UnitPtr&)
 {
 	cout << tab() << "</unit>\n";
 }
 
-bool XMLGen::
+bool RstGen::
 visitModuleStart(const ModulePtr& p)
 {
 	tabCount_++;
@@ -40,19 +40,19 @@ visitModuleStart(const ModulePtr& p)
 	return true;
 }
 
-void XMLGen::
+void RstGen::
 visitModuleEnd(const ModulePtr& p)
 {
 	cout << tab() << "</module>\n";
 	--tabCount_;
 }
 
-void XMLGen::
+void RstGen::
 visitClassDecl(const ClassDeclPtr& p)
 {
 }
 
-bool XMLGen::
+bool RstGen::
 visitClassDefStart(const ClassDefPtr& p)
 {
 	tabCount_++;
@@ -67,7 +67,7 @@ visitClassDefStart(const ClassDefPtr& p)
 	return true;
 }
 
-void XMLGen::
+void RstGen::
 visitClassDefEnd(const ClassDefPtr& p)
 {
 	//printf("visitClassDefEnd: name = (%s)\n", p->name().c_str());
@@ -77,7 +77,7 @@ visitClassDefEnd(const ClassDefPtr& p)
 	--tabCount_;
 }
 
-bool XMLGen::
+bool RstGen::
 visitExceptionStart(const ExceptionPtr& p)
 {
 	tabCount_++;
@@ -92,7 +92,7 @@ visitExceptionStart(const ExceptionPtr& p)
 	return true;
 }
 
-void XMLGen::
+void RstGen::
 visitExceptionEnd(const ExceptionPtr& p)
 {
 	cout << tab() << "</exception>\n";
@@ -100,7 +100,7 @@ visitExceptionEnd(const ExceptionPtr& p)
 	--tabCount_;
 }
 
-bool XMLGen::
+bool RstGen::
 visitStructStart(const StructPtr& p)
 {
 	tabCount_++;
@@ -115,7 +115,7 @@ visitStructStart(const StructPtr& p)
 	return true;
 }
 
-void XMLGen::
+void RstGen::
 visitStructEnd(const StructPtr& p)
 {
 	cout << tab() << "</struct>\n";
@@ -123,7 +123,7 @@ visitStructEnd(const StructPtr& p)
 	--tabCount_;
 }
 
-void XMLGen::
+void RstGen::
 visitOperation(const OperationPtr& p)
 {
 	std::string rtp_s = "void";
@@ -163,7 +163,7 @@ visitOperation(const OperationPtr& p)
 	--tabCount_;
 }
 
-void XMLGen::
+void RstGen::
 visitParamDecl(const ParamDeclPtr& p)
 {
 	std::string inout = "in";
@@ -188,7 +188,7 @@ visitParamDecl(const ParamDeclPtr& p)
 	cout << tab() << "</parameter>\n";
 }
 
-void XMLGen::
+void RstGen::
 visitDataMember(const DataMemberPtr& p)
 {
 	tabCount_++;
@@ -211,7 +211,7 @@ visitDataMember(const DataMemberPtr& p)
 	--tabCount_;
 }
 
-void XMLGen::
+void RstGen::
 visitSequence(const SequencePtr& p)
 {
 	tabCount_++;
@@ -232,7 +232,7 @@ visitSequence(const SequencePtr& p)
 	--tabCount_;
 }
 
-void XMLGen::
+void RstGen::
 visitDictionary(const DictionaryPtr& p)
 {
 	tabCount_++;
@@ -258,7 +258,7 @@ visitDictionary(const DictionaryPtr& p)
 	--tabCount_;
 }
 
-void XMLGen::
+void RstGen::
 visitEnum(const EnumPtr& p)
 {
 	tabCount_++;
@@ -284,19 +284,19 @@ visitEnum(const EnumPtr& p)
 	--tabCount_;
 }
 
-void XMLGen::
+void RstGen::
 visitConst(const ConstPtr&)
 {
 	printf("visitConst\n");
 }
 
-std::string XMLGen::
+std::string RstGen::
 tab()
 {
 	return std::string(tabCount_*tabSize_, ' ');
 }
 
-void XMLGen::
+void RstGen::
 genMetadata(const std::list<std::string>& metadata)
 {
 	for ( std::list<std::string>::const_iterator i = metadata.begin();

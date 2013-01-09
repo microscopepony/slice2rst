@@ -1,0 +1,21 @@
+Slice2xml is a simple Slice to XML transformer.  It is built using the
+[unsupported] Slice parser code in the Ice code base.  This version is
+built against Ice 3.3.1.
+
+Usage: slice2xml [-Idir] <slice file>
+
+The -Idir option lets you add directories for other .ice files you may
+choose to include in your project (exactly as slice2cpp does it).
+
+The program outputs the XML to stdout.
+
+To build you will need to set ICE_HOME, MCPP_HOME, and COMPILER in your
+environment and invoke make or gmake.
+
+I do not have a Visual Studio setup for the program - if anyone cares, I
+can do it.
+
+The simple run script will transform 'testInput.ice' to XML.
+
+Please contact me at mwilson1962@gmail.com with any questions, comments,
+or wild accolades.

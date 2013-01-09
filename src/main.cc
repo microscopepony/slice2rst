@@ -163,11 +163,11 @@ main(int argc, char* argv[])
 		return EXIT_FAILURE;
     }
 
-#if ICE_INT_VERSION / 100 < 304
+//#if ICE_INT_VERSION / 100 < 304
 	UnitPtr u = Unit::createUnit(false, false, false, true);
-#else
-	UnitPtr u = Unit::createUnit(false, false, false);
-#endif
+//#else
+//	UnitPtr u = Unit::createUnit(false, false, false);
+//#endif
 
 	int parseStatus = u->parse(*i, cppHandle, false);
 

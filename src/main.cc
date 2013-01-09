@@ -150,15 +150,25 @@ main(int argc, char* argv[])
 
 	vector<string>::const_iterator i = args.begin();
 	std::string filename = *i;
-	Preprocessor icecpp(argv[0], *i, cppArgs);
-	FILE* cppHandle = icecpp.preprocess(false);
+#if ICE_INT_VERSION / 100 < 304
+	Preprocessor* icecpp = new Preprocessor(argv[0], *i, cppArgs);
+#else
+	PreprocessorPtr icecpp = Preprocessor::create(argv[0], *i, cppArgs);
+#endif
+
+	FILE* cppHandle = icecpp->preprocess(false);
 
 	if (cppHandle == 0)
     {
 		return EXIT_FAILURE;
     }
 
+#if ICE_INT_VERSION / 100 < 304
 	UnitPtr u = Unit::createUnit(false, false, false, true);
+#else
+	UnitPtr u = Unit::createUnit(false, false, false);
+#endif
+
 	int parseStatus = u->parse(*i, cppHandle, false);
 
 	if ( parseStatus == EXIT_FAILURE )
@@ -167,7 +177,7 @@ main(int argc, char* argv[])
 		exit(0);
 	}
 	    
-	if(!icecpp.close())
+	if(!icecpp->close())
 	{
 	    u->destroy();
 	    return EXIT_FAILURE;

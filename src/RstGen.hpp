@@ -30,7 +30,8 @@ public:
 
 private:
     std::string tab();
-    void genMetadata(const std::list<std::string>& metadata);
+    void genMetadata(const Slice::Contained& c);
+    void genStrings(const Slice::Contained& c);
 
     int tabSize_;
     int tabCount_;

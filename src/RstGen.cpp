@@ -1,5 +1,9 @@
 #include <vector>
+#include <list>
+#include <sstream>
 #include "RstGen.hpp"
+
+// See http://sphinx-doc.org/markup/desc.html for Sphinx directives
 
 using namespace std;
 using namespace Slice;
@@ -14,27 +18,26 @@ RstGen() :
 bool RstGen::
 visitUnitStart(const UnitPtr& p)
 {
-    cout << tab() << "<unit file=\"" << p->currentFile() << "\">\n";
-
+    cout << tab() << "start unit: " << p->currentFile() << "\n\n";
     return true;
 }
 
 void RstGen::
 visitUnitEnd(const UnitPtr&)
 {
-    cout << tab() << "</unit>\n";
+    cout << tab() << "end unit\n\n";
 }
 
 bool RstGen::
 visitModuleStart(const ModulePtr& p)
 {
-    tabCount_++;
+    //tabCount_++;
 
-    cout << tab() << "<module name=\"" << p->name() << "\">\n";
+    cout << tab() << ".. module:: " << p->name() << "\n\n";
 
     tabCount_++;
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+    genMetadata(*p);
+    genStrings(*p);
     --tabCount_;
 
     return true;
@@ -43,8 +46,8 @@ visitModuleStart(const ModulePtr& p)
 void RstGen::
 visitModuleEnd(const ModulePtr& p)
 {
-    cout << tab() << "</module>\n";
-    --tabCount_;
+    cout << tab() << "end module\n\n";
+    //--tabCount_;
 }
 
 void RstGen::
@@ -57,11 +60,11 @@ visitClassDefStart(const ClassDefPtr& p)
 {
     tabCount_++;
 
-    cout << tab() << "<interface name=\"" << p->name() << "\">\n";
+    cout << tab() << ".. class: " << p->name() << "\n\n";
 
     tabCount_++;
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+    genMetadata(*p);
+    genStrings(*p);
     --tabCount_;
 
     return true;
@@ -70,9 +73,7 @@ visitClassDefStart(const ClassDefPtr& p)
 void RstGen::
 visitClassDefEnd(const ClassDefPtr& p)
 {
-    //printf("visitClassDefEnd: name = (%s)\n", p->name().c_str());
-
-    cout << tab() << "</interface>\n";
+    cout << tab() << "end class\n\n";
 
     --tabCount_;
 }
@@ -82,11 +83,11 @@ visitExceptionStart(const ExceptionPtr& p)
 {
     tabCount_++;
 
-    cout << tab() << "<exception name=\"" << p->name() << "\">\n";
+    cout << tab() << ".. exception: " << p->name() << "\n\n";
 
     tabCount_++;
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+    genMetadata(*p);
+    genStrings(*p);
     --tabCount_;
 
     return true;
@@ -95,7 +96,7 @@ visitExceptionStart(const ExceptionPtr& p)
 void RstGen::
 visitExceptionEnd(const ExceptionPtr& p)
 {
-    cout << tab() << "</exception>\n";
+    cout << tab() << "end exception\n\n";
 
     --tabCount_;
 }
@@ -105,11 +106,11 @@ visitStructStart(const StructPtr& p)
 {
     tabCount_++;
 
-    cout << tab() << "<struct name=\"" << p->name() << "\">\n";
+    cout << tab() << ".. class: " << p->name() << "\n\n";
 
     tabCount_++;
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+    genMetadata(*p);
+    genStrings(*p);
     --tabCount_;
 
     return true;
@@ -118,7 +119,7 @@ visitStructStart(const StructPtr& p)
 void RstGen::
 visitStructEnd(const StructPtr& p)
 {
-    cout << tab() << "</struct>\n";
+    cout << tab() << "end struct\n\n";
 
     --tabCount_;
 }
@@ -137,15 +138,8 @@ visitOperation(const OperationPtr& p)
     if ( rtp )
         rtp_s = rtp->typeId();
 
-    cout << tab() << "<operation name=\"" << p->name() << "\"" <<
-        " returnType=\"" << rtp_s <<
-        "\">\n";
-
-
-    tabCount_++;
-
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+    // TODO: Check if this is a global or class method
+    cout << tab() << ".. classmethod: " << p->name() << "(";
 
     vector<string> params;
     ParamDeclList paramList = p->parameters();
@@ -153,12 +147,22 @@ visitOperation(const OperationPtr& p)
     for(ParamDeclList::const_iterator q = paramList.begin();
         q != paramList.end(); ++q)
     {
+        // TODO: Store the types and output them in the description body
         visitParamDecl(*q);
     }
 
+    cout << ")\n\n";
+
+    tabCount_++;
+
+    cout << tab() << ":rtype: " << rtp_s << "\n\n";
+
+    genMetadata(*p);
+    genStrings(*p);
+
     --tabCount_;
 
-    cout << tab() << "</operation>\n";
+    cout << tab() << "end operation\n\n";
 
     --tabCount_;
 }
@@ -173,6 +177,7 @@ visitParamDecl(const ParamDeclPtr& p)
     if ( p->isOutParam() )
         inout = "out";
 
+    /*
     cout << tab() <<
         "<parameter name=\"" << name << "\" type=\"" << tp->typeId() <<
         "\" inout=\"" << inout << "\"" <<
@@ -180,12 +185,14 @@ visitParamDecl(const ParamDeclPtr& p)
 
     tabCount_++;
 
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+    genMetadata(*p);
+    genStrings(*p);
 
     --tabCount_;
 
     cout << tab() << "</parameter>\n";
+    */
+    cout << tp->typeId() << " " << p->name() << ", ";
 }
 
 void RstGen::
@@ -195,18 +202,17 @@ visitDataMember(const DataMemberPtr& p)
 
     TypePtr tp = p->type();
 
-    cout << tab() <<
-        "<dataMember name=\"" << p->name() << "\" type=\"" << tp->typeId() <<
-        "\">\n";
+    cout << tab() << ".. attribute: " << p->name() << "\n\n";
 
     tabCount_++;
+    cout << tab() << ":type " << p->name() << ": " << tp->typeId() << "\n";
 
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+    genMetadata(*p);
+    genStrings(*p);
 
     --tabCount_;
 
-    cout << tab() << "</dataMember>\n";
+    cout << tab() << "end dataMember\n\n";
 
     --tabCount_;
 }
@@ -218,16 +224,17 @@ visitSequence(const SequencePtr& p)
 
     TypePtr tp = p->type();
 
-    cout << tab() <<
-        "<sequence name=\"" << p->name() << "\" type=\"" << tp->typeId() <<
-        "\">\n";
+    cout << tab() << ".. class: " << p->name() << "\n\n";
 
     tabCount_++;
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+
+    cout << tab() << "Sequence type: " << tp->typeId() << "\n";
+    genMetadata(*p);
+    genStrings(*p);
+
     --tabCount_;
 
-    cout << tab() << "</sequence>\n";
+    cout << tab() << "end sequence\n\n";
 
     --tabCount_;
 }
@@ -240,20 +247,18 @@ visitDictionary(const DictionaryPtr& p)
     TypePtr keyType = p->keyType();
     TypePtr valueType = p->valueType();
 
-    cout << tab() <<
-        "<dictionary name=\"" <<
-        p->name() << "\" keyType=\"" << keyType->typeId() <<
-        "\" valueType=\"" << valueType->typeId() <<
-        "\">\n";
+    cout << tab() << ".. class: " << p->name() << "\n\n";
 
     tabCount_++;
 
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
+    cout << tab() << "Dictionary keytype: " << keyType->typeId()
+         << " value-type: " << valueType->typeId() << "\n";
+    genMetadata(*p);
+    genStrings(*p);
 
     --tabCount_;
 
-    cout << tab() << "</dictionary>\n";
+    cout << tab() << "end dictionary\n\n";
 
     --tabCount_;
 }
@@ -263,23 +268,23 @@ visitEnum(const EnumPtr& p)
 {
     tabCount_++;
 
-    cout << tab() << "<enum name=\"" << p->name() << "\">\n";
+    cout << tab() << ".. class: " << p->name() << "\n\n";
 
     tabCount_++;
-    std::list<std::string> metadata = p->getMetaData();
-    genMetadata(metadata);
 
     EnumeratorList el = p->getEnumerators();
 
     for ( EnumeratorList::const_iterator i=el.begin(); i!=el.end(); i++)
     {
-        cout << tab() << "<enumerator name=\"" <<
-            (*i)->name() << "\"/>\n";
+        cout << tab() << ".. attribute: " << (*i)->name() << "\n";
     }
+
+    genMetadata(*p);
+    genStrings(*p);
 
     --tabCount_;
 
-    cout << tab() << "</enum>\n";
+    cout << tab() << "end enum\n\n";
 
     --tabCount_;
 }
@@ -287,22 +292,46 @@ visitEnum(const EnumPtr& p)
 void RstGen::
 visitConst(const ConstPtr&)
 {
-    printf("visitConst\n");
+    cout << "Constant\n\n";
 }
 
 std::string RstGen::
 tab()
 {
-    return std::string(tabCount_*tabSize_, ' ');
+    return std::string(tabCount_ * tabSize_, ' ');
 }
 
 void RstGen::
-genMetadata(const std::list<std::string>& metadata)
+genMetadata(const Slice::Contained& c)
 {
-    for ( std::list<std::string>::const_iterator i = metadata.begin();
+    std::list<std::string> metadata = c.getMetaData();
+    for (std::list<std::string>::const_iterator i = metadata.begin();
           i != metadata.end(); ++i)
     {
-        //cout << tab() << "<metadata \"" << *i << "\"/>\n";
-        cout << tab() << "<metadata " << *i << "/>\n";
+        cout << tab() << "metadata: " << *i << "\n";
     }
 }
+
+void RstGen::
+genStrings(const Slice::Contained& c)
+{
+    cout << tab() << "strings:\n";
+    cout
+        << tab() << "name: " << c.name() << "\n"
+        << tab() << "scopedname: " << c.scoped() << "\n"
+        << tab() << "scope: " << c.scope() << "\n"
+        << tab() << "flattenedScope: " << c.flattenedScope() << "\n"
+        << tab() << "file: " << c.file() << "\n"
+        << tab() << "line: " << c.line() << "\n"
+        << tab() << "comment:\n\n";
+
+    // Indent each line of the comment
+    std::stringstream ss(c.comment());
+    std::string line;
+    while (std::getline(ss, line, '\n')) {
+        cout << tab() << line << "\n";
+    }
+
+    cout << "\n";
+}
+

@@ -1,4 +1,0 @@
-#!/bin/sh
-
-./slice2xml -I ${ICE_HOME}/slice testInput.ice
-

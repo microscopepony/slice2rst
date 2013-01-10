@@ -254,29 +254,10 @@ visitParamDecl(const ParamDeclPtr& p)
 	return;
     }
 
-    std::string inout = "in";
     std::string name = p->name();
-    TypePtr tp = p->type();
-
-    if ( p->isOutParam() )
-        inout = "out";
-
-    /*
-    cout << tab() <<
-        "<parameter name=\"" << name << "\" type=\"" << tp->typeId() <<
-        "\" inout=\"" << inout << "\"" <<
-        ">\n";
-
-    _tabCount++;
-
-    genMetadata(*p);
-    genStrings(*p);
-
-    --_tabCount;
-
-    cout << tab() << "</parameter>\n";
-    */
-    cout << tp->typeId() << " " << p->name() << ", ";
+    //TypePtr tp = p->type();
+    //cout << tp->typeId() << " " << p->name() << ", ";
+    cout << p->name() << ", ";
 }
 
 void RstGen::

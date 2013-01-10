@@ -35,13 +35,13 @@ private:
     void genStrings(const Slice::Contained& c);
     bool isSameFile(const Slice::Contained& c);
 
-    int tabSize_;
-    int tabCount_;
+    int _tabSize;
+    int _tabCount;
 
     std::string _module;
     std::string _file;
 
-    ::IceUtilInternal::Output xmlOut_;
+    //::IceUtilInternal::Output xmlOut_;
 };
 
 #endif

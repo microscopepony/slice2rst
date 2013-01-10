@@ -18,7 +18,11 @@ RstGen() :
 bool RstGen::
 visitUnitStart(const UnitPtr& p)
 {
-    cout << tab() << "start unit: " << p->currentFile() << "\n\n";
+    //cout << tab() << "start unit: " << p->currentFile() << "\n\n";
+    std::string title = "start unit: " + p->currentFile();
+    std::string underline = std::string(title.size(), '=');
+    cout << title << "\n"
+	 << underline << "\n\n";
     return true;
 }
 
@@ -34,11 +38,12 @@ visitModuleStart(const ModulePtr& p)
     //tabCount_++;
 
     cout << tab() << ".. module:: " << p->name() << "\n\n";
+    //cout << tab() << ".. currentmodule:: " << p->name() << "\n\n";
 
-    tabCount_++;
-    genMetadata(*p);
-    genStrings(*p);
-    --tabCount_;
+    //tabCount_++;
+    //genMetadata(*p);
+    //genStrings(*p);
+    //--tabCount_;
 
     return true;
 }
@@ -58,15 +63,16 @@ visitClassDecl(const ClassDeclPtr& p)
 bool RstGen::
 visitClassDefStart(const ClassDefPtr& p)
 {
-    tabCount_++;
+    //tabCount_++;
 
-    cout << tab() << ".. class: " << p->name() << "\n\n";
+    cout << tab() << ".. class:: " << p->name() << "\n\n";
 
     tabCount_++;
     genMetadata(*p);
     genStrings(*p);
     --tabCount_;
 
+    tabCount_++;
     return true;
 }
 
@@ -81,15 +87,16 @@ visitClassDefEnd(const ClassDefPtr& p)
 bool RstGen::
 visitExceptionStart(const ExceptionPtr& p)
 {
-    tabCount_++;
+    //tabCount_++;
 
-    cout << tab() << ".. exception: " << p->name() << "\n\n";
+    cout << tab() << ".. exception:: " << p->name() << "\n\n";
 
     tabCount_++;
     genMetadata(*p);
     genStrings(*p);
     --tabCount_;
 
+    tabCount_++;
     return true;
 }
 
@@ -104,15 +111,16 @@ visitExceptionEnd(const ExceptionPtr& p)
 bool RstGen::
 visitStructStart(const StructPtr& p)
 {
-    tabCount_++;
+    //tabCount_++;
 
-    cout << tab() << ".. class: " << p->name() << "\n\n";
+    cout << tab() << ".. class:: " << p->name() << "\n\n";
 
     tabCount_++;
     genMetadata(*p);
     genStrings(*p);
     --tabCount_;
 
+    tabCount_++;
     return true;
 }
 
@@ -130,7 +138,7 @@ visitOperation(const OperationPtr& p)
     std::string rtp_s = "void";
     TypePtr rtp = p->returnType();
 
-    tabCount_++;
+    //tabCount_++;
 
     //
     // If the return type ptr is null, return type is void.
@@ -139,7 +147,7 @@ visitOperation(const OperationPtr& p)
         rtp_s = rtp->typeId();
 
     // TODO: Check if this is a global or class method
-    cout << tab() << ".. classmethod: " << p->name() << "(";
+    cout << tab() << ".. classmethod:: " << p->name() << "(";
 
     vector<string> params;
     ParamDeclList paramList = p->parameters();
@@ -164,7 +172,7 @@ visitOperation(const OperationPtr& p)
 
     cout << tab() << "end operation\n\n";
 
-    --tabCount_;
+    //--tabCount_;
 }
 
 void RstGen::
@@ -198,11 +206,11 @@ visitParamDecl(const ParamDeclPtr& p)
 void RstGen::
 visitDataMember(const DataMemberPtr& p)
 {
-    tabCount_++;
+    //tabCount_++;
 
     TypePtr tp = p->type();
 
-    cout << tab() << ".. attribute: " << p->name() << "\n\n";
+    cout << tab() << ".. attribute:: " << p->name() << "\n\n";
 
     tabCount_++;
     cout << tab() << ":type " << p->name() << ": " << tp->typeId() << "\n";
@@ -214,17 +222,17 @@ visitDataMember(const DataMemberPtr& p)
 
     cout << tab() << "end dataMember\n\n";
 
-    --tabCount_;
+    //--tabCount_;
 }
 
 void RstGen::
 visitSequence(const SequencePtr& p)
 {
-    tabCount_++;
+    //tabCount_++;
 
     TypePtr tp = p->type();
 
-    cout << tab() << ".. class: " << p->name() << "\n\n";
+    cout << tab() << ".. class:: " << p->name() << "\n\n";
 
     tabCount_++;
 
@@ -236,18 +244,18 @@ visitSequence(const SequencePtr& p)
 
     cout << tab() << "end sequence\n\n";
 
-    --tabCount_;
+    //--tabCount_;
 }
 
 void RstGen::
 visitDictionary(const DictionaryPtr& p)
 {
-    tabCount_++;
+    //tabCount_++;
 
     TypePtr keyType = p->keyType();
     TypePtr valueType = p->valueType();
 
-    cout << tab() << ".. class: " << p->name() << "\n\n";
+    cout << tab() << ".. class:: " << p->name() << "\n\n";
 
     tabCount_++;
 
@@ -260,15 +268,15 @@ visitDictionary(const DictionaryPtr& p)
 
     cout << tab() << "end dictionary\n\n";
 
-    --tabCount_;
+    //--tabCount_;
 }
 
 void RstGen::
 visitEnum(const EnumPtr& p)
 {
-    tabCount_++;
+    //tabCount_++;
 
-    cout << tab() << ".. class: " << p->name() << "\n\n";
+    cout << tab() << ".. class:: " << p->name() << "\n\n";
 
     tabCount_++;
 
@@ -286,7 +294,7 @@ visitEnum(const EnumPtr& p)
 
     cout << tab() << "end enum\n\n";
 
-    --tabCount_;
+    //--tabCount_;
 }
 
 void RstGen::
@@ -305,25 +313,36 @@ void RstGen::
 genMetadata(const Slice::Contained& c)
 {
     std::list<std::string> metadata = c.getMetaData();
+
+    cout << tab() << "\n"
+	 << tab() << "metadata::\n\n";
+
+    ++tabCount_;
     for (std::list<std::string>::const_iterator i = metadata.begin();
           i != metadata.end(); ++i)
     {
-        cout << tab() << "metadata: " << *i << "\n";
+        cout << tab() << *i << "\n";
     }
+    --tabCount_;
 }
 
 void RstGen::
 genStrings(const Slice::Contained& c)
 {
-    cout << tab() << "strings:\n";
+    cout << tab() << "\n"
+	 << tab() << "strings::\n\n";
+
+    ++tabCount_;
     cout
         << tab() << "name: " << c.name() << "\n"
         << tab() << "scopedname: " << c.scoped() << "\n"
         << tab() << "scope: " << c.scope() << "\n"
         << tab() << "flattenedScope: " << c.flattenedScope() << "\n"
         << tab() << "file: " << c.file() << "\n"
-        << tab() << "line: " << c.line() << "\n"
-        << tab() << "comment:\n\n";
+        << tab() << "line: " << c.line() << "\n\n";
+    --tabCount_;
+
+    //cout << tab() << "comment:\n\n";
 
     // Indent each line of the comment
     std::stringstream ss(c.comment());
@@ -333,5 +352,7 @@ genStrings(const Slice::Contained& c)
     }
 
     cout << "\n";
+
+    //--tabCount_;
 }
 

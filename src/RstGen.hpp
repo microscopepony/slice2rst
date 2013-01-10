@@ -30,11 +30,14 @@ public:
 
 private:
     std::string tab();
+    void genBody(const Slice::Contained& c);
     void genMetadata(const Slice::Contained& c);
     void genStrings(const Slice::Contained& c);
 
     int tabSize_;
     int tabCount_;
+
+    std::string _module;
 
     ::IceUtilInternal::Output xmlOut_;
 };

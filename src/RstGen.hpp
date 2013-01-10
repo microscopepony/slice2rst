@@ -22,6 +22,7 @@ public:
     virtual void visitStructEnd(const Slice::StructPtr&);
     virtual void visitOperation(const Slice::OperationPtr&);
     virtual void visitParamDecl(const Slice::ParamDeclPtr&);
+    void describeParamDecl(const Slice::ParamDeclPtr&);
     virtual void visitDataMember(const Slice::DataMemberPtr&);
     virtual void visitSequence(const Slice::SequencePtr&);
     virtual void visitDictionary(const Slice::DictionaryPtr&);
@@ -34,6 +35,7 @@ private:
     void genMetadata(const Slice::Contained& c);
     void genStrings(const Slice::Contained& c);
     bool isSameFile(const Slice::Contained& c);
+    std::string formatType(std::string s);
 
     int _tabSize;
     int _tabCount;

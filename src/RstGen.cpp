@@ -33,7 +33,7 @@ visitUnitStart(const UnitPtr& p)
 void RstGen::
 visitUnitEnd(const UnitPtr&)
 {
-    cout << ".. debug: end unit\n\n";
+    cout << tab() << ".. debug: end unit\n\n";
     _file = "";
 }
 
@@ -76,7 +76,7 @@ visitModuleEnd(const ModulePtr& p)
 	return;
     }
 
-    cout << ".. debug: end module " << _module << "\n\n";
+    cout << tab() << ".. debug: end module " << _module << "\n\n";
 
     std::size_t n = _module.find_last_of('.');
     if (n == std::string::npos)
@@ -123,7 +123,7 @@ visitClassDefEnd(const ClassDefPtr& p)
 	return;
     }
 
-    cout << ".. debug: end class\n\n";
+    cout << tab() << ".. debug: end class\n\n";
 
     --_tabCount;
 }
@@ -155,7 +155,7 @@ visitExceptionEnd(const ExceptionPtr& p)
 	return;
     }
 
-    cout << ".. debug: end exception\n\n";
+    cout << tab() << ".. debug: end exception\n\n";
 
     --_tabCount;
 }
@@ -187,7 +187,7 @@ visitStructEnd(const StructPtr& p)
 	return;
     }
 
-    cout << ".. debug: end struct\n\n";
+    cout << tab() << ".. debug: end struct\n\n";
 
     --_tabCount;
 }
@@ -197,6 +197,7 @@ visitOperation(const OperationPtr& p)
 {
     if (!isSameFile(*p))
     {
+	cout << tab() << ".. debug: skipping " << p->name() << "\n\n";
 	return;
     }
 
@@ -228,13 +229,19 @@ visitOperation(const OperationPtr& p)
 
     _tabCount++;
 
+    for(ParamDeclList::const_iterator q = paramList.begin();
+        q != paramList.end(); ++q)
+    {
+	describeParamDecl(*q);
+    }
+
     cout << tab() << ":rtype: " << rtp_s << "\n\n";
 
     genBody(*p);
 
     --_tabCount;
 
-    cout << ".. debug: end operation\n\n";
+    cout << tab() << ".. debug: end operation\n\n";
 
     //--_tabCount;
 }
@@ -273,6 +280,29 @@ visitParamDecl(const ParamDeclPtr& p)
 }
 
 void RstGen::
+describeParamDecl(const ParamDeclPtr& p)
+{
+    std::string inout = "in";
+    std::string name = p->name();
+    TypePtr tp = p->type();
+
+    if ( p->isOutParam() )
+        inout = "out";
+
+    cout << tab() <<
+        ":param " << name << " "
+	 << formatType(tp->typeId())
+	 << ": (" << inout << ")\n\n";
+
+    _tabCount++;
+
+    genMetadata(*p);
+    genStrings(*p);
+
+    --_tabCount;
+}
+
+void RstGen::
 visitDataMember(const DataMemberPtr& p)
 {
     if (!isSameFile(*p))
@@ -292,7 +322,7 @@ visitDataMember(const DataMemberPtr& p)
 
     --_tabCount;
 
-    cout << ".. debug: end dataMember\n\n";
+    cout << tab() << ".. debug: end dataMember\n\n";
 
     //--_tabCount;
 }
@@ -317,7 +347,7 @@ visitSequence(const SequencePtr& p)
 
     --_tabCount;
 
-    cout << ".. debug: end sequence\n\n";
+    cout << tab() << ".. debug: end sequence\n\n";
 
     //--_tabCount;
 }
@@ -344,7 +374,7 @@ visitDictionary(const DictionaryPtr& p)
 
     --_tabCount;
 
-    cout << ".. debug: end dictionary\n\n";
+    cout << tab() << ".. debug: end dictionary\n\n";
 
     //--_tabCount;
 }
@@ -373,7 +403,7 @@ visitEnum(const EnumPtr& p)
 
     --_tabCount;
 
-    cout << ".. debug: end enum\n\n";
+    cout << tab() << ".. debug: end enum\n\n";
 
     //--_tabCount;
 }
@@ -450,4 +480,29 @@ isSameFile(const Slice::Contained& c)
     return c.file() == _file;
 }
 
+std::string RstGen::
+formatType(std::string s)
+{
+    std::size_t p = 0;
+
+    while (true)
+    {
+	p = s.find("::");
+	if (p == std::string::npos)
+	{
+	    break;
+	}
+
+	if (p == 0)
+	{
+	    s = s.substr(2);
+	}
+	else
+	{
+	    //s.replace(p, p + 2, ".");
+	    s = s.substr(0, p) + "." + s.substr(p + 2);
+	}
+    }
+    return s;
+}
 

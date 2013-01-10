@@ -156,7 +156,7 @@ main(int argc, char* argv[])
     PreprocessorPtr icecpp = Preprocessor::create(argv[0], *i, cppArgs);
 #endif
 
-    FILE* cppHandle = icecpp->preprocess(false);
+    FILE* cppHandle = icecpp->preprocess(true);
 
     if (cppHandle == 0)
     {

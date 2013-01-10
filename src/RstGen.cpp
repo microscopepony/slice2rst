@@ -22,7 +22,7 @@ visitUnitStart(const UnitPtr& p)
     //_file = p->currentFile();
     _file = p->topLevelFile();
 
-    std::string title = "start unit: " + _file;
+    std::string title = _file;
     std::string underline = std::string(title.size(), '=');
     cout << title << "\n"
 	 << underline << "\n\n";

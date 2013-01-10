@@ -164,7 +164,12 @@ main(int argc, char* argv[])
     }
 
 //#if ICE_INT_VERSION / 100 < 304
-    UnitPtr u = Unit::createUnit(false, false, false, true);
+    bool ignRedefs = false;
+    bool all = false;
+    bool allowIcePrefix = false;
+    bool caseSensitive = true;
+    //StringList defaultGlobalMetadata;
+    UnitPtr u = Unit::createUnit(ignRedefs, all, allowIcePrefix, caseSensitive);
 //#else
 //      UnitPtr u = Unit::createUnit(false, false, false);
 //#endif

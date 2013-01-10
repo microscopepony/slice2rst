@@ -18,10 +18,15 @@ RstGen() :
 bool RstGen::
 visitUnitStart(const UnitPtr& p)
 {
-    std::string title = "start unit: " + p->currentFile();
+    // Doesn't seem to work:
+    //_file = p->currentFile();
+    _file = p->topLevelFile();
+
+    std::string title = "start unit: " + _file;
     std::string underline = std::string(title.size(), '=');
     cout << title << "\n"
 	 << underline << "\n\n";
+
     return true;
 }
 
@@ -29,11 +34,17 @@ void RstGen::
 visitUnitEnd(const UnitPtr&)
 {
     cout << ".. debug: end unit\n\n";
+    _file = "";
 }
 
 bool RstGen::
 visitModuleStart(const ModulePtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return true;
+    }
+
     if (_module.empty())
     {
 	_module = p->name();
@@ -60,6 +71,11 @@ visitModuleStart(const ModulePtr& p)
 void RstGen::
 visitModuleEnd(const ModulePtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
+
     cout << ".. debug: end module " << _module << "\n\n";
 
     std::size_t n = _module.find_last_of('.');
@@ -83,6 +99,10 @@ visitClassDecl(const ClassDeclPtr& p)
 bool RstGen::
 visitClassDefStart(const ClassDefPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return true;
+    }
     //tabCount_++;
 
     cout << tab() << ".. class:: " << p->name() << "\n\n";
@@ -98,6 +118,11 @@ visitClassDefStart(const ClassDefPtr& p)
 void RstGen::
 visitClassDefEnd(const ClassDefPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
+
     cout << ".. debug: end class\n\n";
 
     --tabCount_;
@@ -106,6 +131,10 @@ visitClassDefEnd(const ClassDefPtr& p)
 bool RstGen::
 visitExceptionStart(const ExceptionPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return true;
+    }
     //tabCount_++;
 
     cout << tab() << ".. exception:: " << p->name() << "\n\n";
@@ -121,6 +150,11 @@ visitExceptionStart(const ExceptionPtr& p)
 void RstGen::
 visitExceptionEnd(const ExceptionPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
+
     cout << ".. debug: end exception\n\n";
 
     --tabCount_;
@@ -129,6 +163,10 @@ visitExceptionEnd(const ExceptionPtr& p)
 bool RstGen::
 visitStructStart(const StructPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return true;
+    }
     //tabCount_++;
 
     cout << tab() << ".. class:: " << p->name() << "\n\n";
@@ -144,6 +182,11 @@ visitStructStart(const StructPtr& p)
 void RstGen::
 visitStructEnd(const StructPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
+
     cout << ".. debug: end struct\n\n";
 
     --tabCount_;
@@ -152,6 +195,11 @@ visitStructEnd(const StructPtr& p)
 void RstGen::
 visitOperation(const OperationPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
+
     std::string rtp_s = "void";
     TypePtr rtp = p->returnType();
 
@@ -194,6 +242,11 @@ visitOperation(const OperationPtr& p)
 void RstGen::
 visitParamDecl(const ParamDeclPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
+
     std::string inout = "in";
     std::string name = p->name();
     TypePtr tp = p->type();
@@ -222,6 +275,10 @@ visitParamDecl(const ParamDeclPtr& p)
 void RstGen::
 visitDataMember(const DataMemberPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
     //tabCount_++;
 
     TypePtr tp = p->type();
@@ -243,6 +300,10 @@ visitDataMember(const DataMemberPtr& p)
 void RstGen::
 visitSequence(const SequencePtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
     //tabCount_++;
 
     TypePtr tp = p->type();
@@ -264,6 +325,10 @@ visitSequence(const SequencePtr& p)
 void RstGen::
 visitDictionary(const DictionaryPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
     //tabCount_++;
 
     TypePtr keyType = p->keyType();
@@ -287,6 +352,10 @@ visitDictionary(const DictionaryPtr& p)
 void RstGen::
 visitEnum(const EnumPtr& p)
 {
+    if (!isSameFile(*p))
+    {
+	return;
+    }
     //tabCount_++;
 
     cout << tab() << ".. class:: " << p->name() << "\n\n";
@@ -374,4 +443,11 @@ genStrings(const Slice::Contained& c)
     //--tabCount_;
     //--tabCount_;
 }
+
+bool RstGen::
+isSameFile(const Slice::Contained& c)
+{
+    return c.file() == _file;
+}
+
 

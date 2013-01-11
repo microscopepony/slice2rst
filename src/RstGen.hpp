@@ -37,6 +37,10 @@ private:
     bool isSameFile(const Slice::Contained& c);
     std::string formatType(std::string s);
 
+    // This should be in a separate class
+    std::string formatComment(const std::string comment,
+			      const std::string indent);
+
     int _tabSize;
     int _tabCount;
 

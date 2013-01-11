@@ -404,6 +404,7 @@ tab()
 void RstGen::
 genBody(const Slice::Contained& c)
 {
+/*
     std::stringstream ss(c.comment());
     std::string line;
     while (std::getline(ss, line, '\n')) {
@@ -411,7 +412,9 @@ genBody(const Slice::Contained& c)
     }
 
     cout << "\n";
+*/
 
+    cout << formatComment(c.comment(), tab());
     cout << tab() << "slice2rst debug info::\n\n";
 
     ++_tabCount;
@@ -486,4 +489,37 @@ formatType(std::string s)
     }
     return s;
 }
+
+// The Ice parse removes empty lines... need to put them back in for some
+// sphinx tags
+// TODO: Move this into a separate formatting class
+std::string RstGen::
+formatComment(const std::string comment, const std::string indent)
+{
+    std::stringstream ss(comment);
+    std::string formatted;
+    std::string line;
+
+    std::string specialTags[] = {
+	":param ",
+	":return:"
+    };
+
+    while (std::getline(ss, line, '\n')) {
+	for (int i = 0; i < sizeof(specialTags) / sizeof(specialTags[0]); ++i)
+	{
+	    if (line.compare(0, specialTags[i].size(), specialTags[i]) == 0)
+	    {
+		formatted += "\n\n";
+		break;
+	    }
+	}
+
+	formatted += indent + line;
+    }
+
+    formatted += "\n";
+    return formatted;
+}
+
 

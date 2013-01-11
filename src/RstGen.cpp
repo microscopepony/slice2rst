@@ -297,7 +297,8 @@ visitDataMember(const DataMemberPtr& p)
     cout << tab() << ".. attribute:: " << p->name() << "\n\n";
 
     _tabCount++;
-    cout << tab() << ":type " << p->name() << ": " << tp->typeId() << "\n\n";
+    cout << tab() << ":type " << p->name() << ": "
+	 << formatType(tp->typeId()) << "\n\n";
 
     genBody(*p);
 
@@ -323,7 +324,7 @@ visitSequence(const SequencePtr& p)
 
     _tabCount++;
 
-    cout << tab() << "Sequence type: " << tp->typeId() << "\n";
+    cout << tab() << "Sequence type: " << formatType(tp->typeId()) << "\n";
     genBody(*p);
 
     --_tabCount;
@@ -349,8 +350,8 @@ visitDictionary(const DictionaryPtr& p)
 
     _tabCount++;
 
-    cout << tab() << "Dictionary keytype: " << keyType->typeId()
-         << " value-type: " << valueType->typeId() << "\n";
+    cout << tab() << "Dictionary keytype: " << formatType(keyType->typeId())
+         << " value-type: " << formatType(valueType->typeId()) << "\n";
     genBody(*p);
 
     --_tabCount;

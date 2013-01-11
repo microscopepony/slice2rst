@@ -1,0 +1,8 @@
+Assuming this is worth continuing with:
+
+* Clean up the code
+* Documentation
+* Decide whether comments should use Sphinx or limited Javadoc style tags.
+  Currently the following @ tags are used: @param @return @see @link
+  It should be relatively simple to parse these are convert to sphinx format   in the output, so comments remain compatible with the Javadoc style.
+

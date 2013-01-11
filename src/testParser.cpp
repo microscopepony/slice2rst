@@ -11,8 +11,8 @@ int testCommentParser()
 	"@param a First parameter\n"
 	"@param b Second parameter\n"
 	"@return Ut wisi enim ad minim veniam, quis nostrud exerci tation\n"
-	"        ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo\n"
-	"        consequat.\n"
+	"        ullamcorper [suscipit.lobortis] nisl ut aliquip [ex.ea]\n"
+	"        commodo consequat.\n"
 	"@throws Exception Raised if something goes wrong\n";
 
     SliceCommentParser scp(comment);

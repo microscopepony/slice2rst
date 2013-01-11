@@ -7,10 +7,10 @@ LIB_DIRS = $(MCPP_HOME)/lib
 %.o: %.cc
 	$(COMPILER) -Wall -I $(INCLUDE_DIRS) -g -c $<
 
-slice2rst: main.o RstGen.o
+slice2rst: main.o RstGen.o SliceCommentParser.o
 	$(COMPILER) -Wall -I $(INCLUDE_DIRS) -o $@ *.o -L$(MCPP_HOME)/lib -L$(MCPP_HOME)/lib -L$(ICE_HOME)/lib -L$(ICE_HOME)/lib -lIceUtil -lSlice -lmcpp
 
-RstGen.o: RstGen.cpp RstGen.hpp
+RstGen.o: RstGen.cpp RstGen.hpp SliceCommentParser.hpp
 
 main.o: main.cpp
 

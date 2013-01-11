@@ -5,6 +5,7 @@
 #define _SLICECOMMENTPARSER_HPP_
 
 #include <list>
+#include <sstream>
 #include <string>
 
 
@@ -92,6 +93,8 @@ private:
     void parse();
 
     TagValues parseChunk(const std::string s);
+
+    std::string parseInternalLinks(const std::string s) const;
 
     SliceCommentSplitter _splitter;
 

@@ -1,18 +1,26 @@
 COMPILER=g++
 
-INCLUDE_DIRS = $(ICE_HOME)/include
+INCLUDE_DIRS = -I $(ICE_HOME)/include
 
-LIB_DIRS = $(MCPP_HOME)/lib
+LIB_DIRS = -L $(MCPP_HOME)/lib
+
+COMMON_OBJS = RstGen.o SliceCommentParser.o LinkHandler.o
+HEADERS = $(wildcard *.hpp)
 
 %.o: %.cpp
-	$(COMPILER) -Wall -I $(INCLUDE_DIRS) -g -c $<
+	$(COMPILER) -Wall $(INCLUDE_DIRS) -g -c $<
 
-slice2rst: main.o RstGen.o SliceCommentParser.o
-	$(COMPILER) -Wall -I $(INCLUDE_DIRS) -o $@ *.o -L$(MCPP_HOME)/lib -L$(MCPP_HOME)/lib -L$(ICE_HOME)/lib -L$(ICE_HOME)/lib -lIceUtil -lSlice -lmcpp
+slice2rst: main.o $(COMMON_OBJS)
+	$(COMPILER) -Wall $(INCLUDE_DIRS) -o $@ $^ $(LIB_DIRS) -lIceUtil -lSlice -lmcpp
 
-RstGen.o: RstGen.cpp RstGen.hpp SliceCommentParser.hpp
+test: testParser.o $(COMMON_OBJS)
+	$(COMPILER) -Wall $(INCLUDE_DIRS) -o $@ $^ $(LIB_DIRS) -lIceUtil -lSlice -lmcpp
 
-main.o: main.cpp
+
+RstGen.o: RstGen.cpp $(HEADERS)
+SliceCommentParser.o: SliceCommentParser.cpp $(HEADERS)
+LinkHandler.o: LinkHandler.cpp $(HEADERS)
 
 clean:
-	rm -f *.o core slice2rst
+	rm -f *.o slice2rst test
+

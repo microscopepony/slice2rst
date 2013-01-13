@@ -4,7 +4,7 @@ INCLUDE_DIRS = $(ICE_HOME)/include
 
 LIB_DIRS = $(MCPP_HOME)/lib
 
-%.o: %.cc
+%.o: %.cpp
 	$(COMPILER) -Wall -I $(INCLUDE_DIRS) -g -c $<
 
 slice2rst: main.o RstGen.o SliceCommentParser.o

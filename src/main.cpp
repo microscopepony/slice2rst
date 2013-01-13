@@ -13,6 +13,7 @@
 #include <Slice/Preprocessor.h>
 #include <Slice/Parser.h>
 
+#include "LinkHandler.hpp"
 #include "RstGen.hpp"
 
 using namespace std;

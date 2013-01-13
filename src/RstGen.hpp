@@ -3,6 +3,7 @@
 
 #include <Slice/Parser.h>
 #include <IceUtil/OutputUtil.h>
+#include "LinkHandler.hpp"
 #include "SliceCommentParser.hpp"
 
 
@@ -54,19 +55,5 @@ private:
     //::IceUtilInternal::Output xmlOut_;
 };
 
-
-
-/**
- * A very basic link handler.
- * Assumes all typenames are classes.
- * Assumes all [link] style links are classes.
- */
-class BasicClassLinkHandler: public LinkHandler
-{
-public:
-    virtual std::string type(std::string s);
-
-    virtual std::string inlineLinkParser(std::string s);
-};
 
 #endif

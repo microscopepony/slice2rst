@@ -1,3 +1,4 @@
+#include "LinkHandler.hpp"
 #include "SliceCommentParser.hpp"
 #include <iostream>
 
@@ -15,7 +16,8 @@ int testCommentParser()
 	"        commodo consequat.\n"
 	"@throws Exception Raised if something goes wrong\n";
 
-    SliceCommentParser scp(comment);
+    BasicClassLinkHandler linker;
+    SliceCommentParser scp(comment, linker);
     //scp.getParsedTagValues();
     std::string prefix = "    ";
     std::string text = scp.getParsedText(prefix);

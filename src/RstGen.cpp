@@ -10,7 +10,8 @@ using namespace std;
 using namespace Slice;
 
 RstGen::
-RstGen() :
+RstGen(LinkHandler& linker):
+    _linker(linker),
     _tabSize(4),
     _tabCount(0)
 {
@@ -202,43 +203,45 @@ visitOperation(const OperationPtr& p)
 	return;
     }
 
-    std::string rtp_s = "void";
+    // If the return type ptr is null, return type is void.
     TypePtr rtp = p->returnType();
+    std::string rtype = "void";
+    if (rtp)
+    {
+        rtype = rtp->typeId();
+    }
 
     //_tabCount++;
-
-    //
-    // If the return type ptr is null, return type is void.
-    //
-    if ( rtp )
-        rtp_s = rtp->typeId();
 
     // TODO: Check if this is a global or class method
     cout << tab() << ".. classmethod:: " << p->name() << "(";
 
-    vector<string> params;
     ParamDeclList paramList = p->parameters();
+    FunctionParams params;
 
     for(ParamDeclList::const_iterator q = paramList.begin();
         q != paramList.end(); ++q)
     {
-        // TODO: Store the types and output them in the description body
-        visitParamDecl(*q);
+        const ParamDeclPtr& d = *q;
+
+        std::string name = d->name();
+        std::string inout = "in";
+        if (d->isOutParam())
+        {
+            inout = "out";
+        }
+        TypePtr tp = d->type();
+
+        params.addAutoParam(name, tp->typeId(), inout);
+
+        cout << name << ", ";
     }
 
     cout << ")\n\n";
 
     _tabCount++;
 
-    for(ParamDeclList::const_iterator q = paramList.begin();
-        q != paramList.end(); ++q)
-    {
-	describeParamDecl(*q);
-    }
-
-    cout << tab() << ":rtype: " << formatType(rtp_s) << "\n\n";
-
-    genBody(*p);
+    genOperationBody(*p, params, rtype);
 
     --_tabCount;
 
@@ -250,37 +253,6 @@ visitOperation(const OperationPtr& p)
 void RstGen::
 visitParamDecl(const ParamDeclPtr& p)
 {
-    if (!isSameFile(*p))
-    {
-	return;
-    }
-
-    std::string name = p->name();
-    //TypePtr tp = p->type();
-    //cout << tp->typeId() << " " << p->name() << ", ";
-    cout << p->name() << ", ";
-}
-
-void RstGen::
-describeParamDecl(const ParamDeclPtr& p)
-{
-    std::string inout = "in";
-    std::string name = p->name();
-    TypePtr tp = p->type();
-
-    if ( p->isOutParam() )
-        inout = "out";
-
-    cout << tab() << ":param " << name << ": (" << inout << ")\n"
-	 << tab() << ":type " << name << ": "
-	 << formatType(tp->typeId()) << "\n\n";
-
-    _tabCount++;
-
-    //genMetadata(*p);
-    //genStrings(*p);
-
-    --_tabCount;
 }
 
 void RstGen::
@@ -298,7 +270,7 @@ visitDataMember(const DataMemberPtr& p)
 
     _tabCount++;
     cout << tab() << ":type " << p->name() << ": "
-	 << formatType(tp->typeId()) << "\n\n";
+	 << _linker.type(tp->typeId()) << "\n\n";
 
     genBody(*p);
 
@@ -324,7 +296,7 @@ visitSequence(const SequencePtr& p)
 
     _tabCount++;
 
-    cout << tab() << "Sequence type: " << formatType(tp->typeId()) << "\n";
+    cout << tab() << "Sequence type: " << _linker.type(tp->typeId()) << "\n";
     genBody(*p);
 
     --_tabCount;
@@ -350,8 +322,8 @@ visitDictionary(const DictionaryPtr& p)
 
     _tabCount++;
 
-    cout << tab() << "Dictionary keytype: " << formatType(keyType->typeId())
-         << " value-type: " << formatType(valueType->typeId()) << "\n";
+    cout << tab() << "Dictionary keytype: " << _linker.type(keyType->typeId())
+         << " value-type: " << _linker.type(valueType->typeId()) << "\n";
     genBody(*p);
 
     --_tabCount;
@@ -405,17 +377,55 @@ tab()
 void RstGen::
 genBody(const Slice::Contained& c)
 {
-/*
-    std::stringstream ss(c.comment());
-    std::string line;
-    while (std::getline(ss, line, '\n')) {
-        cout << tab() << line << "\n";
+    cout << formatComment(c.comment(), tab()) << "\n";
+    cout << tab() << "slice2rst debug info::\n\n";
+
+    ++_tabCount;
+    genMetadata(c);
+    genStrings(c);
+    --_tabCount;
+}
+
+void RstGen::
+genOperationBody(const Slice::Contained& c, FunctionParams& params, std::string rtype)
+{
+
+    SliceCommentParser scp(c.comment(), _linker);
+    const std::list<SliceCommentParser::TagValues>& tvs = scp.getParsedTagValues();
+    std::string stag;
+    std::string scomment;
+
+    for (std::list<SliceCommentParser::TagValues>::const_iterator it = tvs.begin();
+         it != tvs.end(); ++it)
+    {
+        if (it->tag == "@param")
+        {
+            params.addCommentParam(it->value1, it->value2);
+        }
+        else if (!it->tag.empty())
+        {
+            stag += tab() + scp.getTagValueText(*it) + "\n";
+        }
+        else
+        {
+            scomment += tab() + scp.getTagValueText(*it) + "\n";
+        }
     }
 
-    cout << "\n";
-*/
+    const std::list<FunctionParams::ParamDescription>& pds = params.combineDescriptions();
+    for (std::list<FunctionParams::ParamDescription>::const_iterator it = pds.begin();
+         it != pds.end(); ++it)
+    {
+        cout << tab() << ":param " + it->name << ": "
+             << _linker.inlineLinkParser(it->description) << "\n"
+             << tab() << ":type " + it->name << ": "
+             << _linker.type(it->type) << "\n";
+    }
+    cout << tab() << ":rtype: " << _linker.type(rtype) << "\n\n";
 
-    cout << formatComment(c.comment(), tab()) << "\n";
+    cout << stag << "\n"
+         << scomment << "\n";
+
     cout << tab() << "slice2rst debug info::\n\n";
 
     ++_tabCount;
@@ -465,8 +475,24 @@ isSameFile(const Slice::Contained& c)
     return c.file() == _file;
 }
 
+// The Ice parse removes empty lines... need to put them back in for some
+// sphinx tags
+// TODO: Move this into a separate formatting class
+
 std::string RstGen::
-formatType(std::string s)
+formatComment(const std::string comment, const std::string indent)
+{
+    SliceCommentParser scp(comment, _linker);
+    //scp.getParsedTagValues();
+    std::string text = scp.getParsedText(indent);
+    return text;
+}
+
+
+
+
+
+std::string BasicClassLinkHandler::type(std::string s)
 {
     std::size_t p = 0;
 
@@ -494,18 +520,52 @@ formatType(std::string s)
     return s;
 }
 
-// The Ice parse removes empty lines... need to put them back in for some
-// sphinx tags
-// TODO: Move this into a separate formatting class
-
-std::string RstGen::
-formatComment(const std::string comment, const std::string indent)
+std::string BasicClassLinkHandler::inlineLinkParser(std::string s)
 {
-    SliceCommentParser scp(comment);
-    //scp.getParsedTagValues();
-    std::string text = scp.getParsedText(indent);
-    return text;
+    std::string t;
+
+    // p: Start of the substring under consideration
+    // q: Opening [
+    // r: Closing ]
+    size_t p = 0, q = 0, r = 0;
+
+    while (true)
+    {
+	q = s.find_first_of('[', p);
+	if (q == std::string::npos)
+	{
+	    t += s.substr(p);
+	    break;
+	}
+	t += s.substr(p, q - p);
+
+	if (q > 0 && s[q - 1] == '\\')
+	{
+	    // @todo handle \\[
+	    t += s.substr(p, q - p + 1);
+	    p = q + 1;
+	    continue;
+	}
+
+	r = s.find_first_of(']', q);
+	if (r == std::string::npos)
+	{
+	    t += s.substr(p);
+	    break;
+	}
+
+	if (r - q == 1)
+	{
+	    // []
+	    t += s.substr(p, r - p + 1);
+	    p = r + 1;
+	    continue;
+	}
+
+	// Finally, we have a link
+	t += " :class:`" + s.substr(q + 1, r - q - 1) + "` ";
+	p = r + 1;
+    }
+
+    return t;
 }
-
-
-

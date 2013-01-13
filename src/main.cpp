@@ -189,8 +189,9 @@ main(int argc, char* argv[])
     }
 
 
-    RstGen* myRstGen = new RstGen;
-    u->visit(myRstGen, true);
+    BasicClassLinkHandler linker;
+    RstGen rstGen(linker);
+    u->visit(&rstGen, true);
 
     u->destroy();
 

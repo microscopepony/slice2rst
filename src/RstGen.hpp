@@ -3,11 +3,13 @@
 
 #include <Slice/Parser.h>
 #include <IceUtil/OutputUtil.h>
+#include "SliceCommentParser.hpp"
+
 
 class RstGen : public Slice::ParserVisitor
 {
 public:
-    RstGen();
+    RstGen(LinkHandler& linker);
 
     virtual bool visitUnitStart(const Slice::UnitPtr&);
     virtual void visitUnitEnd(const Slice::UnitPtr&);
@@ -22,7 +24,6 @@ public:
     virtual void visitStructEnd(const Slice::StructPtr&);
     virtual void visitOperation(const Slice::OperationPtr&);
     virtual void visitParamDecl(const Slice::ParamDeclPtr&);
-    void describeParamDecl(const Slice::ParamDeclPtr&);
     virtual void visitDataMember(const Slice::DataMemberPtr&);
     virtual void visitSequence(const Slice::SequencePtr&);
     virtual void visitDictionary(const Slice::DictionaryPtr&);
@@ -32,14 +33,17 @@ public:
 private:
     std::string tab();
     void genBody(const Slice::Contained& c);
+    void genOperationBody(const Slice::Contained& c, FunctionParams& params,
+                          std::string rtype);
     void genMetadata(const Slice::Contained& c);
     void genStrings(const Slice::Contained& c);
     bool isSameFile(const Slice::Contained& c);
-    std::string formatType(std::string s);
 
     // This should be in a separate class
     std::string formatComment(const std::string comment,
 			      const std::string indent);
+
+    LinkHandler& _linker;
 
     int _tabSize;
     int _tabCount;
@@ -48,6 +52,21 @@ private:
     std::string _file;
 
     //::IceUtilInternal::Output xmlOut_;
+};
+
+
+
+/**
+ * A very basic link handler.
+ * Assumes all typenames are classes.
+ * Assumes all [link] style links are classes.
+ */
+class BasicClassLinkHandler: public LinkHandler
+{
+public:
+    virtual std::string type(std::string s);
+
+    virtual std::string inlineLinkParser(std::string s);
 };
 
 #endif

@@ -5,6 +5,7 @@
 #define _SLICECOMMENTPARSER_HPP_
 
 #include <list>
+#include <map>
 #include <sstream>
 #include <string>
 
@@ -54,6 +55,38 @@ private:
 };
 
 /**
+ * Methods for dealing with in-line links
+ */
+class LinkHandler
+{
+public:
+    virtual ~LinkHandler() {
+    }
+
+    /**
+     * This method will be called when a string which should contain a typename needs to
+     * be handled or formatted. No validation is done on the supplied string.
+     * @param s A string which should contain a typename
+     * @return The formatted typename string
+     */
+    virtual std::string type(std::string s) {
+        return s;
+    }
+
+    /**
+     * Any comment text forming part of a description will be passed to this method, so
+     * that inline links can be parsed and converted if required.
+     * @param s A comment string which may contain links
+     * @return The comment string with links formatted as required
+     */
+    virtual std::string inlineLinkParser(std::string s) {
+        return s;
+    }
+};
+
+
+
+/**
  * Converts special slice comment tags into restructured text
  * http://zeroc.com/doc/Ice-3.3.1/manual/Slice.5.23.html
  * @TODO Implement links ([])
@@ -75,13 +108,19 @@ public:
      * Parse a comment
      * @param comment the complete comment
      */
-    SliceCommentParser(const std::string comment);
+    SliceCommentParser(const std::string comment, LinkHandler& linker);
 
     /**
      * Get the list of parsed text
      * @return a list of parsed text including tags if found
      */
     const std::list<TagValues>& getParsedTagValues() const;
+
+    /**
+     * Get the restructured text representation of a tag/value without indentation.
+     * @return The tag/value formatted as restructured text
+     */
+    std::string getTagValueText(const TagValues& tv) const;
 
     /**
      * Get the restructured text representation of a comment
@@ -94,11 +133,78 @@ private:
 
     TagValues parseChunk(const std::string s);
 
-    std::string parseInternalLinks(const std::string s) const;
+    LinkHandler& _linker;
 
     SliceCommentSplitter _splitter;
 
     std::list<TagValues> _tvlist;
 };
+
+
+/**
+ * Deal with param definitions specified in the comment
+ */
+class FunctionParams
+{
+public:
+    /**
+     * The documentation of a parameter
+     */
+    struct ParamDescription
+    {
+        /**
+         * The name of the parameter
+         */
+        std::string name;
+
+        /**
+         * The type of the parameter
+         */
+        std::string type;
+
+        /**
+         * Is this an input or output parameter?
+         */
+        std::string inout;
+
+        /**
+         * Description if provided
+         */
+        std::string description;
+    };
+
+    /**
+     * A new object for matching up parameter names, types and descriptions
+     */
+    FunctionParams();
+
+    /**
+     * Add a parameter description from a comment
+     * @param name Name of the parameter
+     * @description Description of the parameter
+     */
+    void addCommentParam(std::string name, std::string description);
+
+    /**
+     * Add a parameter from the slice parser
+     * @param name Name of the parameter
+     * @param type The type of the parameter
+     * @param inout Is this parameter used for input or output
+     */
+    void addAutoParam(std::string name, std::string type, std::string inout);
+
+    /**
+     * Match up the descriptions from the comment with the automatically found parameters
+     * @return the list of parameters
+     */
+    const std::list<ParamDescription>& combineDescriptions();
+
+private:
+
+    std::map<std::string, std::string> _commentParams;
+
+    std::list<ParamDescription> _params;
+};
+
 
 #endif // _SLICECOMMENTPARSER_HPP_

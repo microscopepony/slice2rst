@@ -87,8 +87,9 @@ void SliceCommentSplitter::getNext()
 
 
 
-SliceCommentParser::SliceCommentParser(const std::string comment):
-    _splitter(comment)
+
+SliceCommentParser::SliceCommentParser(const std::string comment, LinkHandler& linker):
+    _linker(linker), _splitter(comment)
 {
     parse();
 }
@@ -99,6 +100,29 @@ SliceCommentParser::getParsedTagValues() const
     return _tvlist;
 }
 
+std::string SliceCommentParser::getTagValueText(const TagValues& tv) const
+{
+    if (tv.tag.empty())
+    {
+        return _linker.inlineLinkParser(tv.value1);
+    }
+    if (tv.tag == "@param")
+    {
+        return ":param " + tv.value1 + ": " + _linker.inlineLinkParser(tv.value2);
+    }
+    if (tv.tag == "@throws")
+    {
+        return ":throws " + tv.value1 + ": " + _linker.inlineLinkParser(tv.value2);
+    }
+    if (tv.tag == "@return")
+    {
+        return ":returns: " + _linker.inlineLinkParser(tv.value1);
+    }
+
+    // @todo output a warning
+    return _linker.inlineLinkParser(tv.value1);
+}
+
 std::string SliceCommentParser::getParsedText(std::string prefix) const
 {
     std::string s = "\n";
@@ -106,28 +130,7 @@ std::string SliceCommentParser::getParsedText(std::string prefix) const
     for (std::list<TagValues>::const_iterator it = _tvlist.begin();
 	 it != _tvlist.end(); ++it)
     {
-	if (it->tag.empty())
-	{
-	    s += prefix + parseInternalLinks(it->value1) + end;
-	}
-	else if (it->tag == "@param")
-	{
-	    s += prefix + ":param " + it->value1 + ": " +
-		parseInternalLinks(it->value2) + end;
-	}
-	else if (it->tag == "@throws")
-	{
-	    s += prefix + ":throws " + it->value1 + ": " +
-		parseInternalLinks(it->value2) + end;
-	}
-	else if (it->tag == "@return")
-	{
-	    s += prefix + ":returns: " + parseInternalLinks(it->value1) + end;
-	}
-	else
-	{
-	    s += prefix + parseInternalLinks(it->value1) + end;
-	}
+        s += prefix + getTagValueText(*it) + end;
     }
 
     return s;
@@ -208,53 +211,59 @@ SliceCommentParser::TagValues SliceCommentParser::parseChunk(
     }
 }
 
-std::string SliceCommentParser::parseInternalLinks(const std::string s) const
+
+
+
+FunctionParams::FunctionParams()
 {
-    std::string t;
+}
 
-    // p: Start of the substring under consideration
-    // q: Opening [
-    // r: Closing ]
-    size_t p = 0, q = 0, r = 0;
+void FunctionParams::addCommentParam(std::string name, std::string description)
+{
+    _commentParams[name] = description;
+}
 
-    while (true)
+void FunctionParams::addAutoParam(std::string name, std::string type, std::string inout)
+{
+    ParamDescription p;
+    p.name = name;
+    p.type = type;
+    p.inout = inout;
+    _params.push_back(p);
+}
+
+const std::list<FunctionParams::ParamDescription>& FunctionParams::combineDescriptions()
+{
+    if (_commentParams.empty())
     {
-	q = s.find_first_of('[', p);
-	if (q == std::string::npos)
-	{
-	    t += s.substr(p);
-	    break;
-	}
-	t += s.substr(p, q - p);
-
-	if (q > 0 && s[q - 1] == '\\')
-	{
-	    // @todo handle \\[
-	    t += s.substr(p, q - p + 1);
-	    p = q + 1;
-	    continue;
-	}
-
-	r = s.find_first_of(']', q);
-	if (r == std::string::npos)
-	{
-	    t += s.substr(p);
-	    break;
-	}
-
-	if (r - q == 1)
-	{
-	    // []
-	    t += s.substr(p, r - p + 1);
-	    p = r + 1;
-	    continue;
-	}
-
-	// Finally, we have a link
-	t += " :class:`" + s.substr(q + 1, r - q - 1) + "` ";
-	p = r + 1;
+        return _params;
     }
 
-    return t;
+    // Run through the automatically found parameters, and see if a description was
+    // provided in the comment. Then add any additional parameters from the comment.
+
+    for (std::list<ParamDescription>::iterator p = _params.begin();
+         p != _params.end(); ++p)
+    {
+        std::map<std::string, std::string>::iterator c = _commentParams.find(p->name);
+        if (c != _commentParams.end())
+        {
+            p->description = c->second;
+            _commentParams.erase(c);
+        }
+    }
+
+    for (std::map<std::string, std::string>::const_iterator c = _commentParams.begin();
+         c != _commentParams.end(); ++c)
+    {
+        ParamDescription d;
+        d.name = c->first;
+        d.description = c->second;
+        _params.push_back(d);
+    }
+    _commentParams.clear();
+
+    return _params;
 }
+
 

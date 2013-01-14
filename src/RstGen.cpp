@@ -420,7 +420,7 @@ genOperationBody(const Slice::Contained& c, FunctionParams& params, std::string 
         cout << tab() << ":param " + it->name << ": "
              << _linker.inlineLinkParser(it->description) << "\n"
              << tab() << ":type " + it->name << ": "
-             << _linker.type(it->type) << "\n";
+             << (it->type.empty() ? "" : _linker.type(it->type)) << "\n";
     }
     cout << tab() << ":rtype: " << _linker.type(rtype) << "\n\n";
 

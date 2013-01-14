@@ -112,7 +112,8 @@ std::string SliceCommentParser::getTagValueText(const TagValues& tv) const
     }
     if (tv.tag == "@throws")
     {
-        return ":throws " + tv.value1 + ": " + _linker.inlineLinkParser(tv.value2);
+        return ":raises: " + _linker.type(tv.value1) + ": " +
+	    _linker.inlineLinkParser(tv.value2);
     }
     if (tv.tag == "@return")
     {

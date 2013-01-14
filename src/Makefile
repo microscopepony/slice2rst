@@ -1,8 +1,14 @@
 COMPILER=g++
 
-INCLUDE_DIRS = -I $(ICE_HOME)/include
+ifneq ($(strip $(ICE_HOME)),)
+	INCLUDE_DIRS += -I$(ICE_HOME)/include
+	LIB_DIRS += -L$(ICE_HOME)/include
+endif
 
-LIB_DIRS = -L $(MCPP_HOME)/lib
+ifneq ($(strip $(MCPP_HOME)),)
+	INCLUDE_DIRS += -I$(MCPP_HOME)/include
+	LIB_DIRS += -L$(MCPP_HOME)/include
+endif
 
 COMMON_OBJS = RstGen.o SliceCommentParser.o LinkHandler.o
 HEADERS = $(wildcard *.hpp)

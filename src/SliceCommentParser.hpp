@@ -61,7 +61,6 @@ private:
 /**
  * Converts special slice comment tags into restructured text
  * http://zeroc.com/doc/Ice-3.3.1/manual/Slice.5.23.html
- * @TODO Implement links ([])
  */
 class SliceCommentParser
 {

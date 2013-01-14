@@ -6,10 +6,9 @@ std::string BasicClassLinkHandler::type(std::string s)
 {
     std::size_t p = 0;
 
-    // TODO: inefficient
     while (true)
     {
-	p = s.find("::");
+	p = s.find("::", p);
 	if (p == std::string::npos)
 	{
 	    break;
@@ -21,7 +20,6 @@ std::string BasicClassLinkHandler::type(std::string s)
 	}
 	else
 	{
-	    //s.replace(p, p + 2, ".");
 	    s = s.substr(0, p) + "." + s.substr(p + 2);
 	}
     }

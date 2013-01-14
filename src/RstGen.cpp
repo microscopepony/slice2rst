@@ -476,15 +476,10 @@ isSameFile(const Slice::Contained& c)
     return c.file() == _file;
 }
 
-// The Ice parse removes empty lines... need to put them back in for some
-// sphinx tags
-// TODO: Move this into a separate formatting class
-
 std::string RstGen::
 formatComment(const std::string comment, const std::string indent)
 {
     SliceCommentParser scp(comment, _linker);
-    //scp.getParsedTagValues();
     std::string text = scp.getParsedText(indent);
     return text;
 }

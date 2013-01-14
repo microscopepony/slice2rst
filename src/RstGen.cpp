@@ -364,9 +364,29 @@ visitEnum(const EnumPtr& p)
 }
 
 void RstGen::
-visitConst(const ConstPtr&)
+visitConst(const ConstPtr& p)
 {
-    cout << "Constant\n\n";
+    if (!isSameFile(*p))
+    {
+	return;
+    }
+    //_tabCount++;
+
+    TypePtr tp = p->type();
+
+    cout << tab() << ".. attribute:: " << p->name() << "\n\n";
+
+    _tabCount++;
+    cout << tab() << ":type " << p->name() << ": "
+	 << _linker.type(tp->typeId()) << "\n\n";
+
+    genBody(*p);
+
+    --_tabCount;
+
+    cout << tab() << ".. debug: end dataConst\n\n";
+
+    //--_tabCount;
 }
 
 std::string RstGen::
